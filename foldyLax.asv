@@ -36,13 +36,13 @@ aleph = linspace(0,1,10);
 cmap = [aleph' * cmap(1,:);cmap];
 
 idx = 1:10:N^2; numScatterers = length(idx); idx = min(idx+randi([1 4],size(idx)),N^2);
-aleph = 1e-2*ones(numScatterers,1);
+aleph = 5e-2*ones(numScatterers,1);
 source = zeros(N,N);
 source(idx) = aleph;
 R = sqrt(X.^2 + Z.^2);
 % source = source .* (R < (N/4)*dx);idx = find(source>0); numScatterers = length(idx);aleph = 5e-2*ones(numScatterers,1);
 source = source .* (2*X.^2+Z.^2 < (L/4)^2);idx = find(source>0); numScatterers = length(idx);aleph = 5e-2*ones(numScatterers,1);
-% source = sqrt(X.^2 + Z.^2) < L/8;idx = find(source>0); numScatterers = length(idx);
+% R = sqrt(X.^2 + Z.^2);source = R < L/8;idx = find(source>0); numScatterers = length(idx);
 % source = X.^2+2*(Z+20*dx).^2 < (L/4)^2;idx = find(source>0); numScatterers = length(idx);aleph = 5e-2*ones(numScatterers,1);
 figure(2)
 imagesc(x,z,source)
@@ -78,6 +78,7 @@ figure(3)
 subplot(1,5,1)
 imagesc(x,x,abs(Uin),[0 maxAbs]), axis image, colormap(cmap)
 title({'U_{in}',''})
+xlabel('x / m'), xlabel('x / m')
 colorbar
 
 subplot(1,5,2)
