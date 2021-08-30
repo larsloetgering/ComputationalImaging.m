@@ -1,3 +1,5 @@
+set(0, 'DefaultAxesFontSize', 18);
+set(0, 'DefaultFigureColor', 'w');
 A1 = [1 2 7; 1 4 5; 3 2 5];
 A2 = [1 1 -2; 1 -2 1; -2 1 1];
 A3 = A2 + eye(size(A2));
