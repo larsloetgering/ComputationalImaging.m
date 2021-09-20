@@ -1,6 +1,10 @@
 function varargout = hsvplot(varargin)
 % hsvplot(u) generates hue-brightness plot of two dimensional input u 
+% alternative usage:
+% hsvplot(x,u)
+% hsvplot(x,y,u)
 % last change: 3rd March 2018
+% author: Lars Loetgering
 
 if nargin == 1
     u = varargin{1};
@@ -24,14 +28,14 @@ phi = angle( u );
 phi = ( phi + pi )/( 2 * pi );
 
 % normalization of phase saturation
-B = zeros(size(r, 1), size(r, 2), 3, 'like', r);         % Declare RGB array
-B(:,:,1) = phi;
-B(:,:,2) = 1;
-B(:,:,3) = r;
-A = hsv2rgb(B);
+B = zeros(size(r, 1), size(r, 2), 3, 'like', r); % Declare hsv array
+B(:,:,1) = phi; % hue
+B(:,:,2) = 1;   % saturation
+B(:,:,3) = r;   % value
+A = hsv2rgb(B); % hsv > rgb
 
 if nargin == 1
-    imagesc(A); axis image 
+    imagesc(A); axis image off
 elseif nargin == 2
     imagesc(x,x,A); axis image 
 elseif nargin == 3
