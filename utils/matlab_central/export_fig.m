@@ -2032,15 +2032,15 @@ function str = readURL(url)
 end
 
 % Display a promo message in the Matlab console
-function displayPromoMsg(msg, url)
-    %msg = [msg url];
-    msg = strrep(msg,'<$>',url);
-    link = ['<a href="' url];
-    msg = regexprep(msg,url,[link '">$0</a>']);
-    %msg = regexprep(msg,{'consulting','training'},[link '/$0">$0</a>']);
-    %warning('export_fig:promo',msg);
-    disp(['[' 8 msg ']' 8]);
-end
+% function displayPromoMsg(msg, url)
+%     %msg = [msg url];
+%     msg = strrep(msg,'<$>',url);
+%     link = ['<a href="' url];
+%     msg = regexprep(msg,url,[link '">$0</a>']);
+%     %msg = regexprep(msg,{'consulting','training'},[link '/$0">$0</a>']);
+%     %warning('export_fig:promo',msg);
+%     disp(['[' 8 msg ']' 8]);
+% end
 
 % Cross-check existance of other programs
 function programsCrossCheck()
