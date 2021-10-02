@@ -1,0 +1,50 @@
+set(0, 'DefaultAxesFontSize', 18);
+set(0, 'DefaultFigureColor', 'w');
+clear
+im = single(imread('../testImages/Origami.jpg'));
+im = im(:,:,2); % select green channel (out of rgb image)
+
+tic
+% choose c = 2,3,4,5,6,8,10,12,15,16,20,24
+im2 = reshape_cXc(im, c);
+[U,S,V] = svd(im2);
+N = size(im2,2);
+K = 4; % choose K <= c
+imCom = U(:,1:K)*S(1:K,1:K)*V(:,1:K)';
+C = 1-( numel(U(:,1:K)) + numel(S(1:K,1:K)) + numel(V(:,1:K)))/numel(im);
+D = 1/(1-C);
+imCom = reshape_cXc_inv(imCom,size(im,1),size(im,2));
+
+%%
+figure(1)
+imagesc(im2)
+axis square off
+
+figure(2)
+imagesc(imCom)
+axis image off
+colormap gray
+title(['C = ', num2str(round(1000*(C))/10),'% (',num2str(round(D)),'x)'])
+toc
+
+function B = reshape_cXc(A,c)
+B = zeros(8^2,size(A,1)*size(A,2)/8^2);
+counter = 0;
+for k = 1:8:size(A,1)
+    for l = 1:8:size(A,2)
+        counter = counter+1;
+        B(:,counter) = reshape(A(k:k+7,l:l+7),[8^2,1]);
+    end
+end
+end
+
+function A = reshape_cXc_inv(B,M,N)
+A = zeros(M,N);
+counter = 0;
+for k = 1:8:M
+    for l = 1:8:N
+        counter = counter+1;
+        A(k:k+7,l:l+7) = reshape(B(:,counter),[8,8]);
+    end
+end
+end
