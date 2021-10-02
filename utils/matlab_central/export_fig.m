@@ -337,14 +337,14 @@ function [imageData, alpha] = export_fig(varargin) %#ok<*STRCL1>
     pause(0.02);  % this solves timing issues with Java Swing's EDT (http://undocumentedmatlab.com/blog/solving-a-matlab-hang-problem)
 
     % Display promo (just once a week!)
-    try promo_time = getpref('export_fig','promo_time'); catch, promo_time=-inf; end
-    if abs(now-promo_time) > 7 && ~isdeployed
-        programsCrossCheck;
-        msg = char('Gps!qspgfttjpobm!Nbumbc!bttjtubodf-!qmfbtf!dpoubdu!=%?'-1);
-        url = char('iuuqt;00VoepdvnfoufeNbumbc/dpn0dpotvmujoh'-1);
-        displayPromoMsg(msg, url);
-        setpref('export_fig','promo_time',now)
-    end
+%     try promo_time = getpref('export_fig','promo_time'); catch, promo_time=-inf; end
+%     if abs(now-promo_time) > 7 && ~isdeployed
+%         programsCrossCheck;
+%         msg = char('Gps!qspgfttjpobm!Nbumbc!bttjtubodf-!qmfbtf!dpoubdu!=%?'-1);
+%         url = char('iuuqt;00VoepdvnfoufeNbumbc/dpn0dpotvmujoh'-1);
+%         displayPromoMsg(msg, url);
+%         setpref('export_fig','promo_time',now)
+%     end
 
     % Parse the input arguments
     fig = get(0, 'CurrentFigure');
