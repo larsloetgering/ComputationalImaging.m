@@ -1,9 +1,0 @@
-set(0, 'DefaultAxesFontSize', 18);
-set(0, 'DefaultFigureColor', 'w');
-addpath(genpath('utils'))
-n = 11;
-F = fft(eye(n,n));
-plot(F,'k','lineWidth',1)
-im = getimage(gcf);
-axis square off
-export_fig('../testImages/Polygon.jpg','-m2','-transparent','-silent')
