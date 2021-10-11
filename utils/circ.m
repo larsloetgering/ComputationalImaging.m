@@ -1,7 +1,8 @@
-function z = circ(x, y, D)
-% function z = circ(x, y, D)
+function r = circ(X, Y, D)
+% r = circ(X, Y, D)
+% D: diameter
+% X, Y: meshgrid (in x/y-direction)
 
-r = sqrt(x.^2+y.^2);
-z = single(r <= D/2);
+r = single((X.^2+Y.^2) <= D^2/4);
 
 end
