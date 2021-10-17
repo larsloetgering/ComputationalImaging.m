@@ -1,0 +1,35 @@
+clc
+clear
+set(0, 'DefaultAxesFontSize', 18);
+set(0, 'DefaultFigureColor', 'w');
+set(0,'defaultAxesFontName', 'serif')
+rng(0)
+N = 1e3;
+x = randn(N,1);
+K = 20;
+[d,t] = histcounts(x, K);
+t = t(1:K) + 0.5;
+figure(1)
+plot(t,d,'ko','MarkerFaceColor','k')
+xlabel('x value'), ylabel('counts'), grid on
+%%
+numIter = 100;
+A = max(d);
+B = sqrt(sum(t.^2.*d/sum(d)));
+C = 0;
+stepSize = 1e-6;
+%%
+for loop = 1:numIter
+    Agrad = 2*sum( (A*exp(-B*(t-C).^2) - d) .* exp(-B*(t-C).^2) );
+    Bgrad = 2*sum( (A*exp(-B*(t-C).^2) - d) .* A.* exp(-B*(t-C).^2).*(t-C).^2 .* (-1) );
+    Cgrad = 2*sum( (A*exp(-B*(t-C).^2) - d) .* A.* exp(-B*(t-C).^2).*B.*(t-C).^2 .* (-1) );
+    
+    A = A - stepSize * Agrad;
+    B = B - stepSize * Bgrad;
+    
+    figure(2)
+    plot(t,d,'ko','MarkerFaceColor','k')
+    hold on
+    plot(t,A*exp(-B*t.^2),'bo-','MarkerFaceColor','b')
+    hold off, title(['iteartion: ',num2str(loop)]), drawnow
+end
