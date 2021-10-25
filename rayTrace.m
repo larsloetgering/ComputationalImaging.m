@@ -14,30 +14,29 @@ F = [1 z;...        % propagation matrix
      0 1];      
 numRays = 50;       % number of rays
 maxAngle = 5e-2;    % maximum (paraxial) angle
-V = [0*ones(1,numRays); linspace(-maxAngle,maxAngle,numRays)]; % ray bundle at x = 0
-V(1,1:2:numRays) = 1.5e-3 * ones(1, numRays/2);     % set half of the positions to x ~= 0
-
-% propagation step: map V to Vp ("Vprime")
+% ray bundle at x = 0:
+V = [0*ones(1,numRays); linspace(-maxAngle,maxAngle,numRays)]; 
+% set half of the positions to x ~= 0
+V(1,1:2:numRays) = 1.5e-3 * ones(1, numRays/2);     
+% propagation step: map V to Vp ("Vprime"):
 Vp = F * V;         % free space propagation (from source to lens)
-
-% plot locations
 figure(1), clf      % clf clears previous figure if present
 hold on             % hold on allows to draw multiple points
 cmap = jet(numRays);% get colormap to draw rays in different colors
 for k  = 1:numRays
-    plot([0 z], [V(1,k), Vp(1,k)], 'o-','color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
+    plot([0 z], [V(1,k), Vp(1,k)], 'o-',...
+        'color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
 end
 hold off
-
 % lens + free-space
 f = z/2;            % focal length of lens
 L = [1 0; -1/f 1];  % lens matrix
 Vpp = F*(L*Vp);     % lens transormation + propagation step 
-
 figure(1)
 hold on
 for k  = 1:numRays
-    plot([z, 2*z], [Vp(1,k), Vpp(1,k)], 'o-','color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
+    plot([z, 2*z], [Vp(1,k), Vpp(1,k)], 'o-',...
+        'color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
 end
 % draw ellipse to indicate lens position (not mandatory)
 dz = 2e-2;
@@ -50,4 +49,3 @@ h = gca;
 h.LineWidth = 3;
 xlabel('z / m'), ylabel('x / m')
 hold off
-

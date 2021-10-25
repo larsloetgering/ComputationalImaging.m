@@ -5,14 +5,16 @@ addpath(genpath('C:\Users\Lars Loetgering\Dropbox\Codes\fracPty'))
 close all
 % matlab code: lad regression
 
-rng(666,'twister')
+rng(666, 'twister')
+% generate input
 x = (-5:5)';
-N = length(x);
+N = length(x); % number of elements in x
+% generate data
 d = 2*x + 4*(2*rand(N,1)-1);
 % generate outlier
-d(10) = 25;
+d(10) = 50;
 % d(9:end) = 25;
-% lsq
+% lsq: least squares
 aEstimate = x'*d / (x'*x);
 
 % lad

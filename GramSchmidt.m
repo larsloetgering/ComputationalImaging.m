@@ -17,7 +17,6 @@ for j = 1:size(B,2)
     for k = 1:j-1
         q = q - (Qc(:,k)'*q)*Qc(:,k);
     end
-        
     Qc(:,j) = q / sqrt(q'*q);
 end
 errorCGS = abs(abs(det(Qc))-1);
