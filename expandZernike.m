@@ -1,7 +1,8 @@
 set(0, 'DefaultAxesFontSize', 18);
 set(0, 'DefaultFigureColor', 'w');
 set(0,'defaultAxesFontName', 'serif')
-addpath(genpath('/home/user/Dropbox/Codes/fracPty/utils/export_fig2018'))
+% addpath(genpath('/home/user/Dropbox/Codes/fracPty/utils/export_fig2018'))
+addpath(genpath('utils'))
 % matlab code: expandZernike.m
 
 N = 2^6;

@@ -9,8 +9,8 @@ set(0,'defaultAxesFontName', 'serif')
 % main program
 
 % free space
-z = 10e-2;          % propagation distance
-F = [1 z;...        % propagation matrix
+z = 10e-2;          % free-space propagation distance
+F = [1 z;...        % free-space propagation matrix
      0 1];      
 numRays = 50;       % number of rays
 maxAngle = 5e-2;    % maximum (paraxial) angle
@@ -28,6 +28,7 @@ for k  = 1:numRays
         'color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
 end
 hold off
+%%
 % lens + free-space
 f = z/2;            % focal length of lens
 L = [1 0; -1/f 1];  % lens matrix
@@ -38,6 +39,7 @@ for k  = 1:numRays
     plot([z, 2*z], [Vp(1,k), Vpp(1,k)], 'o-',...
         'color',cmap(k,:),'MarkerFaceColor',cmap(k,:))
 end
+%%
 % draw ellipse to indicate lens position (not mandatory)
 dz = 2e-2;
 dx = 1.5e-2;

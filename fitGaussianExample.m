@@ -1,6 +1,6 @@
 clc
 clear
-set(0, 'DefaultAxesFontSize', 18);
+set(0, 'DefaultAxesFontSize', 24);
 set(0, 'DefaultFigureColor', 'w');
 set(0,'defaultAxesFontName', 'serif')
 rng(0)

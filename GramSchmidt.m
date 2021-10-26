@@ -4,7 +4,7 @@ set(0, 'DefaultAxesFontSize', 18);
 set(0, 'DefaultFigureColor', 'w');
 % matlab code: Gram-Schmidt
 
-n = 10;
+n = 3;
 % rng(666 , 'twister'), B = rand(n); % alternative B
 B = hilb(n);
 precision = 'double'; % also try 'single'
