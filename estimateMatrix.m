@@ -7,7 +7,7 @@ A = toeplitz(1:9);
 
 rng(0)
 X = rand(9);
-noise = 1e-1*rand(9);
+noise = 1e-1*randn(9);
 B = A * X + noise;
 SNR = 1/numel(A) * sum(abs(B(:)).^2) / sum(abs(noise(:)).^2);
 
