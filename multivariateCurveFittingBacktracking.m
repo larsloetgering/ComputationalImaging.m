@@ -57,7 +57,6 @@ for loop = 2:numIter
     else
         stepSize_bt = 2/3*stepSize_bt;
         cost_bt(loop) = cost_bt(loop-1);
-        disp(loop)
     end
     % show current estimate
     if mod(loop,figureUpdate)==0
