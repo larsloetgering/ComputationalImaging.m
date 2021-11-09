@@ -11,8 +11,8 @@ p.parse( varargin{:} );
 u = gather(u);
 
 % set grid
-N = size(A,2); x = (1:N) * p.Results.pixelsize(1);
-M = size(A,1); y = (1:M) * p.Results.pixelsize(2);
+N = size(u,2); x = (1:N) * p.Results.pixelsize(1);
+M = size(u,1); y = (1:M) * p.Results.pixelsize(2);
 
 % normalize birghtness (value) to range [0,1]
 r = abs(u);
