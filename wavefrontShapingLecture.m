@@ -28,7 +28,7 @@ colormap(jet)
 %% power method
 v = v / sqrt(v(:)'*v(:));
 numIter = 1e4;
-figureUpdate = 1000;
+figureUpdate = 10;
 
 for k = 0:numIter
     v = linOp(v,B,A,lambda);
