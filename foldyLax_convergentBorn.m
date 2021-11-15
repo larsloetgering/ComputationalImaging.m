@@ -105,18 +105,3 @@ subplot(1,5,5)
 imagesc(x,x,abs(UbornHigher),[0 maxAbs]), axis image, colormap(jet)
 title({'U_{born,higher}',''}), colorbar
 colormap(h, gray)
-
-%%
-figure(99)
-subplot(1,3,1)
-imagesc(x,x,abs(Ufoldy),[0 maxAbs]), axis image, colormap(cmap)
-title({'U_{foldy}',''}), colorbar
-
-subplot(1,3,2)
-imagesc(x,x,abs(Uborn),[0 maxAbs]), axis image, colormap(cmap)
-title({'U_{born,1st}',''}), colorbar
-
-subplot(1,3,3)
-imagesc(x,x,abs(UbornHigher),[0 maxAbs]), axis image, colormap(jet)
-title({'U_{born,5th}',''}), colorbar
-colormap(h, gray)
