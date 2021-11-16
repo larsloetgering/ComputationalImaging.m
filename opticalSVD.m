@@ -24,6 +24,8 @@ xs = linspace(-Ns/2,Ns/2,Ns)*dxs;% 1D coordinates (source)
 % generate pinhole
 diameter = Ls/3;
 source = circ(Xs, Ys, diameter);
+% source = circ(Xs-diameter/4, Ys, diameter/2) + ...
+%          circ(Xs+diameter/4, Ys, diameter/2);
 source = normconv2(source, [1,1;1,1]);
 figure(1); imagesc(source); colormap gray 
 axis image; title('source') % show result
@@ -55,6 +57,9 @@ end
 
 %% receiver aperture
 receiverAperture = normconv2(circ(Xd, Yd, Ld/2), [1,1;1,1]);
+figure(99)
+imagesc(receiverAperture)
+axis image, colormap gray
 sphericalWavelets = bsxfun(@times, sphericalWavelets, receiverAperture);
 
 %% get orthogonal modes
@@ -89,6 +94,7 @@ hsvmodeplot(u(:,:,1:min(wrank, 25)))
 title('receiver modes'), axis off
 
 subplot(1,3,3)
-semilogy(diag(S(1:100,1:100))/trace(S),'ko','MarkerFaceColor','k')
+semilogy(diag(S(1:100,1:100))/trace(S),...
+    'ko','MarkerFaceColor','k')
 axis square, grid on
 title('singular values')
