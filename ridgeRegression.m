@@ -4,9 +4,9 @@ set(0,'defaultAxesFontName', 'serif')
 set(0, 'DefaultLineLineWidth', 2);
 clear 
 
-N = 20;
+N = 50;
 rng(1)
-x = linspace(0,1,N)' + 1e-2*randn(N,1); % data grid
+x = linspace(0,1,N)'; % data grid
 xd = linspace(0,1,5*N)';    % dense grid
 y = exp(x);                 % ground truth
 data=y + 1/2*randn(N,1);    % noisy observation
@@ -23,15 +23,15 @@ for k = 0:p
     Xd(:,k+1) = xd.^k;
 end
 % least squares
-c = inv(X'*X)*(X'*data);
+c_lsq = (X'*X)\(X'*data);
 % ridge regression
 lambda = 1;
-d = inv(X'*X + lambda*eye(p+1,p+1))*(X'*data);
+c_ridge = (X'*X + lambda*eye(p+1,p+1))\(X'*data);
 
 figure(1), clf
 hold on 
-plot(xd,Xd*c,'-bx')
-plot(xd,Xd*d,'-rx')
+plot(xd,Xd*c_lsq,'-b')
+plot(xd,Xd*c_ridge,'-r')
 plot(x,data,'ko','MarkerFaceColor','k')
 plot(x,y,'k--')
 hold off
@@ -39,3 +39,16 @@ axis square
 h = legend('least squares','ridge','data','ground truth');
 h.Location = 'SoutheastOutside';
 axis([0 1 -inf inf])
+
+figure(2),clf
+subplot(1,3,1)
+bar(0:length(c_lsq)-1,c_lsq,'FaceColor','b')
+xlabel('c_{k;lsq}'), axis square, title('LSQ')
+
+subplot(1,3,2)
+bar(0:length(c_ridge)-1,c_ridge,'FaceColor','r')
+xlabel('c_{k;ridge}'), axis square, title('ridge')
+
+subplot(1,3,3)
+bar(0:length(c_ridge)-1,1./gamma(1:length(c_ridge)),'FaceColor','k')
+axis square, title('ground truth')
