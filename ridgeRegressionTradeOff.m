@@ -40,11 +40,11 @@ hold off
 % ridge regression
 lambda = logspace(-2,2,20);
 C_ridge = zeros(length(c_lsq),length(lambda));
-cmap = 0.9*hot(p+1);
 for k = 1:length(lambda)
     C_ridge(:,k) = (X'*X + lambda(k)*eye(p+1,p+1))\(X'*data);
 end
 
+cmap = 0.9*hot(p+1);
 figure(2), clf
 subplot(1,2,1)
 for k = 1:size(C_ridge,1)

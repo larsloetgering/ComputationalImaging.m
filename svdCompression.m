@@ -16,5 +16,6 @@ figure(1)
 imagesc(imCom)
 axis image off 
 colormap gray
-title(['C = ', num2str(round(1000*(C))/10),'% (',num2str(round(D)),'x)'])
+title(['C = ', num2str(round(1000*(C))/10),'% (',...
+               num2str(round(D)),'x)'])
 

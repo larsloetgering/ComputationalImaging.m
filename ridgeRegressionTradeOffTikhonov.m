@@ -5,7 +5,7 @@ set(0, 'DefaultLineLineWidth', 2);
 clear, close all
 
 rng(0)  % seed random number generator
-N = 20; % number of data points (in total)
+N = 30; % number of data points (in total)
 M = round(N/5); % number of test points for cross-validation
 
 x = linspace(0,1,N)';       % data grid
@@ -22,6 +22,7 @@ plot(x,data,'ko','MarkerFaceColor','k')
 axis square
 
 p = 10;
+Gimmel = toeplitz(-eye(p+1-1,1), [-1,1,zeros(1,p+1-2)]);
 X = zeros(size(x,1), p+1);
 Xd = zeros(size(xd,1),p+1);
 Z = zeros(size(z,1), p+1);
@@ -40,11 +41,14 @@ hold off
 % ridge regression
 lambda = logspace(-2,2,20);
 C_ridge = zeros(length(c_lsq),length(lambda));
-cmap = 0.9*hot(p+1);
 for k = 1:length(lambda)
-    C_ridge(:,k) = (X'*X + lambda(k)*eye(p+1,p+1))\(X'*data);
+    % ridge regression
+%     C_ridge(:,k) = (X'*X + lambda(k)*eye(p+1,p+1))\(X'*data);
+    % Tikhonov
+    C_ridge(:,k) = (X'*X + lambda(k) * Gimmel' * Gimmel)\(X'*data);
 end
 
+cmap = 0.9*hot(p+1);
 figure(2), clf
 subplot(1,2,1)
 for k = 1:size(C_ridge,1)
@@ -54,15 +58,14 @@ end
 hold off, grid on, axis square
 hold on
 GT = 1./(gamma(linspace(0,p,p+1)+1))' * ones(1,length(lambda));
-for k = 1:3
+for k = 2:4
     semilogx(lambda, GT(k,:),'--','color',cmap(k,:))
     hold on
 end
 xlabel('\lambda')
 legend('c_0','c_1','c_2','c_3','c_4','c_5','c_6','c_7','c_8','c_9','c_{10}',...
-    'gt_0','gt_1','gt_2','gt_3','gt_4','gt_5','gt_6','gt_7','gt_8','gt_9','gt_{10}')
-legend('location','NorthOutside','Numcolumns',11)
-legend('location','South','Numcolumns',11)
+       'gt_1','gt_2','gt_3')
+legend('location','North','Numcolumns',11)
 
 % compute ground truth
 cost_GT = zeros(1,length(lambda));
@@ -91,6 +94,15 @@ grid on, axis square, grid on, xlabel('\lambda')
 legend('ground truth cost','cross-validation')
 legend('location','North')
 
-[~,minInde] = min(cost_CV)
+[~,minIndex] = min(cost_CV);
+optimalLambda = lambda(minIndex);
+disp(['optimal lambda: ', num2str(optimalLambda)])
 figure(1)
 hold on 
+plot(xd, Xd*C_ridge(:,minIndex),'-r')
+plot(x,y,'k--')
+hold off
+legend('data','LSQ','ridge','ground truth')
+legend('location','SouthEast')
+xlabel('x')
+grid on

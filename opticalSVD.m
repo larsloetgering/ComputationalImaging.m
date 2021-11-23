@@ -24,8 +24,6 @@ xs = linspace(-Ns/2,Ns/2,Ns)*dxs;% 1D coordinates (source)
 % generate pinhole
 diameter = Ls/3;
 source = circ(Xs, Ys, diameter);
-% source = circ(Xs-diameter/4, Ys, diameter/2) + ...
-%          circ(Xs+diameter/4, Ys, diameter/2);
 source = normconv2(source, [1,1;1,1]);
 figure(1); imagesc(source); colormap gray 
 axis image; title('source') % show result

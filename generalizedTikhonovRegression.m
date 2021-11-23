@@ -16,6 +16,8 @@ plot(x,data,'ko','MarkerFaceColor','k')
 axis square
 %%
 p = 10;
+Gimmel = toeplitz(-eye(p+1-1,1), [-1,1,zeros(1,p+1-2)]);
+%%
 X = zeros(size(x,1),p+1);
 Xd = zeros(size(xd,1),p+1);
 for k = 0:p
@@ -27,16 +29,18 @@ c_lsq = (X'*X)\(X'*data);
 % ridge regression
 lambda = 1;
 c_ridge = (X'*X + lambda*eye(p+1,p+1))\(X'*data);
+c_tikhonov = (X'*X + lambda * Gimmel'*Gimmel)\(X'*data);
 
 figure(1), clf
 hold on 
 plot(xd,Xd*c_lsq,'-b')
 plot(xd,Xd*c_ridge,'-r')
+plot(xd,Xd*c_tikhonov,'-m')
 plot(x,data,'ko','MarkerFaceColor','k')
 plot(x,y,'k--')
 hold off
 axis square
-h = legend('least squares','ridge','data','ground truth');
+h = legend('least squares','ridge','Tikhonov','data','ground truth');
 h.Location = 'SoutheastOutside';
 axis([0 1 -inf inf])
 
