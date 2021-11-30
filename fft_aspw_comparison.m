@@ -5,7 +5,7 @@ set(0,'defaultAxesFontName', 'serif')
 addpath(genpath('utils'))
 
 % N = 2^5;
-N = 37;
+N = 13;
 dx = 50e-6;
 L = N*dx;
 x = linspace(-L/2,L/2,N);
@@ -40,7 +40,7 @@ F = fftc(eye(N));
 % ASP = ifftc( H.*fftc( eye(N) ) );
 ASP = H.*fftc( eye(N) );
 
-c = linspace(1,2,N);
+c = linspace(1,1,N);
 
 % cmap = [hsv(size(F,2)/2); flipud(hsv(size(F,2)/2))].*gray(size(F,2));
 cmap = hsv(size(F,2));
@@ -51,20 +51,20 @@ subplot(1,2,1)
 for k = 1:size(F,2)
     subplot(1,2,1)
     hold on
-    plot(c(k)*real(F(:,k)),c(k)*imag(F(:,k)),'o','color',cmap(k,:),...
+    plot(c(k)*real(F(:,k)),c(k)*imag(F(:,k)),'o-','color',cmap(k,:),...
             'MarkerFaceColor',cmap(k,:))
     axis square off
     hold off
     title(num2str(k))
-    axis(0.04*[-2 2 -2 2])
+%     axis(0.04*[-2 2 -2 2])
     
     subplot(1,2,2)
     hold on
-    plot(c(k)*real(ASP(:,k)),c(k)*imag(ASP(:,k)),'o','color',cmap(k,:),...
+    plot(c(k)*real(ASP(:,k)),c(k)*imag(ASP(:,k)),'o-','color',cmap(k,:),...
             'MarkerFaceColor',cmap(k,:))
     axis square off
     hold off
-    axis(0.04*[-2 2 -2 2])
+%     axis(0.04*[-2 2 -2 2])
     
     drawnow
     
