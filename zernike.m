@@ -1,5 +1,7 @@
 function [Z, j] = zernike(r,theta,m,n)
 % compute zernike polynomial with indices m, n
+% m: azimuthal
+% n: radial
 % references:
 % https://en.wikipedia.org/wiki/Zernike_polynomials
 % difference in notation:
