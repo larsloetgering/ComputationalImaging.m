@@ -1,4 +1,4 @@
-function varargout = hsvplot(u, varargin)
+function varargout = hsvplot_axis(x,y,u, varargin)
 % hsvplot(u) generates hue-brightness plot of two dimensional input u 
 % last change: 3rd January 2022
 
@@ -31,7 +31,7 @@ B(:,:,2) = 1;
 B(:,:,3) = r;
 A = hsv2rgb(B);
 
-imagesc(A); axis image 
+imagesc(x,y,A); axis image 
 
 set(gcf, 'Color', 'w');
 

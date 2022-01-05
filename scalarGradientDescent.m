@@ -1,14 +1,15 @@
-clc
+% clc
 % fixed parameters
 y1 = 1;
-y2 = 1;
-n1 = 1;
-n2 = 1;
+y2 = 2;
+n1 = 1;     % air
+n2 = 1.5;   % glass
 L = 4;
+
 % algorithmic properties 
 x = 2;          % initial estimate for x
 stepSize = 2;   % step size
-numIter = 20;  % number of iterations 
+numIter = 200;   % number of iterations 
 for k=1:numIter
     % compute gradient of cost function
     gradCost = n1*x/sqrt(x^2+y1^2) + ...
