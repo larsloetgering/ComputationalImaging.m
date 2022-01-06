@@ -11,10 +11,11 @@ dx = x(2) - x(1);
 [THETA, R] = cart2pol(X,Y);
 
 %% calculate Zernike for m,n
-cmap = [[1 0 0];...
-        [1 1 1];...
-        [0 0 1]];
-cmap = imresize(cmap, [100, 3],'bilinear');
+cmap = cat(1,...
+       cat(2,linspace(1,1,50),linspace(1,0,50)),... %R
+       cat(2,linspace(0,1,50),linspace(1,0,50)),... %G
+       cat(2,linspace(0,1,50),linspace(1,1,50)))    %B
+cmap = transpose(cmap)
 
 Z = [];
 for n = 0:5
@@ -22,13 +23,12 @@ for n = 0:5
         
         [temp, J] = zernike(R,THETA,m,n);
         Z = cat(3,Z, temp);
-        
-        figure(1)
-        imagesc(x,x,Z(:,:,end))
+        figure%(1)
+        imagesc(x,x,Z(:,:,end))  % scaled image display
         xticks([-1 0 1]), yticks([-1 0 1])
         axis image off
-        colormap(cmap)
-        
+        colormap(cmap)        
         title(['n = ',num2str(n), ', m = ',num2str(m), ', J = ',num2str(J)])
+        pause(1)
     end
 end
