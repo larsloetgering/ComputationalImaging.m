@@ -6,7 +6,8 @@ set(0,'defaultAxesFontName', 'serif')
 %%
 % collatzFun(670617279)
 %%
-inputRange = 16;
+% range of numbers being input into the collatz iteration
+inputRange = 1024;
 computationTime = zeros(1,inputRange);
 
 for k = 1:inputRange

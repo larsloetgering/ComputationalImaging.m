@@ -5,19 +5,18 @@ clear, close all
 
 K = 50;
 rng(1)
+
 % example 1 (no covariance)
-% mu1 = [5;0];
-% mu2 = [15;5];
-% sigma1 = [3,0;0,3];
-% sigma2 = [3,0;0,3];
-% example 2 (with covariance)
-K = 50;
-rng(1)
 mu1 = [5;0];
-mu2 = [5;5];
-p = 0.9;
-sigma1 = 10*[1,p;p,1];
-sigma2 = 10*[1,p;p,1];
+mu2 = [15;5];
+sigma1 = [3,0;0,3];
+sigma2 = [3,0;0,3];
+% % example 2 (with covariance)
+% mu1 = [5;0];
+% mu2 = [5;5];
+% p = 0.9;
+% sigma1 = 10*[1,p;p,1];
+% sigma2 = 10*[1,p;p,1];
 % training data
 X1 = mvnrnd(mu1,sigma1,K)';
 X2 = mvnrnd(mu2,sigma2,K)';
