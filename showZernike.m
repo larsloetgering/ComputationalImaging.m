@@ -14,13 +14,11 @@ dx = x(2) - x(1);
 cmap = cat(1,...
        cat(2,linspace(1,1,50),linspace(1,0,50)),... %R
        cat(2,linspace(0,1,50),linspace(1,0,50)),... %G
-       cat(2,linspace(0,1,50),linspace(1,1,50)))    %B
-cmap = transpose(cmap)
+       cat(2,linspace(0,1,50),linspace(1,1,50)))';  %B
 
 Z = [];
 for n = 0:5
     for m = -n:2:n
-        
         [temp, J] = zernike(R,THETA,m,n);
         Z = cat(3,Z, temp);
         figure%(1)
@@ -28,7 +26,8 @@ for n = 0:5
         xticks([-1 0 1]), yticks([-1 0 1])
         axis image off
         colormap(cmap)        
-        title(['n = ',num2str(n), ', m = ',num2str(m), ', J = ',num2str(J)])
+        title(['n = ',num2str(n),...
+               ', m = ',num2str(m), ', J = ',num2str(J)])
         pause(1)
     end
 end

@@ -27,7 +27,8 @@ if mod(m-n,2) == 0
     for s = 0 : ((n-m)/2)
         R = R + r.^(n-2*s) * ...
             ( (-1)^s * gamma(n-s+1) ) / ...
-            ( gamma(s+1) * gamma((n+m)/2-s+1) * gamma((n-m)/2-s+1) );
+            ( gamma(s+1) * gamma((n+m)/2-s+1) * ...
+              gamma((n-m)/2-s+1) );
     end
 else
     R = 0;
