@@ -7,6 +7,7 @@ clc
 
 % 2D solver of eikonal equation
 wavelength = 500e-9;
+k = 2*pi/wavelength;
 Nx = 2000;
 Nz = 2000;
 chi = zeros(Nx, Nz);
@@ -93,7 +94,6 @@ title('rel. error [%]')
 
 %% compare to projection approximation
 
-k = 2*pi/wavelength;
 chi_proj = cumsum(n, 2)*hz;
 chi_proj = chi_proj(:,end) - chi_proj(:,1);
 chi_eik = (chi(:,end)-chi(:,1));
