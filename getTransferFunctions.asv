@@ -18,7 +18,6 @@ if mod( size(source,2), 2) == 0
 end
 
 % compute term1 and term2 which are later(*) added 
-% or subtracted to yield ATF and PTF, respectively
 term1 = centered_ifft2( ...
     centered_fft2( source .* conj(pupil) ) .* ...
     conj( centered_fft2( conj(pupil) ) ) );
@@ -27,7 +26,6 @@ term2 = centered_ifft2( ...
     centered_fft2( source .* pupil ) .* ...
     conj( centered_fft2( pupil ) ) );
 
-% (*)compute ATF and PTF
 ATF = (term1 + term2);
 PTF = 1j*(term1 - term2);
 
@@ -37,14 +35,13 @@ if crop_rows
     PTF = PTF(1:end-1,:);
 end
 
-if crop_cols
+if crop_rows
     ATF = ATF(:,1:end-1);
     PTF = PTF(:,1:end-1);
 end
 
 end
 
-% helper functions 
 function G = centered_fft2(g)
 
 G = fftshift(fft2(ifftshift(g)));
