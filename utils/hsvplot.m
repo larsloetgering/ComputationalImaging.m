@@ -16,7 +16,7 @@ r = r / ( max(r(:)) + eps );
 
 % readjust intensity maximum
 if ~isempty(p.Results.intensityScale)
-    r = posit(r - p.Results.intensityScale(1));
+    r = max(r - p.Results.intensityScale(1), 0);
     r = r/(p.Results.intensityScale(2) - p.Results.intensityScale(1));
 end
 

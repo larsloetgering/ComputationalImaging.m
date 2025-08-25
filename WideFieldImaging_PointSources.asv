@@ -1,0 +1,113 @@
+set(0, 'DefaultAxesFontSize', 24);
+set(0, 'DefaultFigureColor', 'w');
+set(0,'defaultAxesFontName', 'serif')
+set(0, 'DefaultLineLineWidth', 2);
+
+addpath(genpath('utils'))
+%% compute physical coordinate grid
+M = 2048;
+N = M;
+wavelength = 500e-9;
+dx = wavelength / 2;
+L = N*dx;
+x = (-N/2:(N/2-1))*dx;
+[X,Y] = meshgrid(x);
+
+%% generate mixed amplitude / phase object
+% object = ones(N,N);
+%
+% grating 1: top left 1st: amplitude grating
+% xs1 = N/5*dx; ys1 = N/4*dx;
+% wx1 = N/8*dx; p1 = 20*dx;
+% % grating 2: top left 2nd: phase grating
+% xs2 = -N/5*dx; ys2 = N/4*dx;
+% wx2 = N/8*dx; p2 = 20*dx;
+% object = crossGrating(object,X,Y,xs1,ys1,wx1,p1,'amplitude') + ...
+%          crossGrating(object,X,Y,xs2,ys2,wx2,p2,'phase');
+
+afreq = 50; 
+object = starPattern(X, Y, afreq) .* ...
+    (1-circ(X,Y,100*dx)) .* circ(X,Y,0.5*L);
+object = (object > 0.5) .* rect((X-L/4)/(L/2));
+object = (2 - object)/2 .* (1 - rect((X+L/4)/(L/2))) + ...
+        exp(j*0.5*fliplr(object)) .* rect((X+L/4)/(L/2));
+
+figure(1)
+hsvplot(object)
+% imagesc(real(object), [0 1])
+axis image off
+colormap gray
+zoom(1.8)
+
+%% generate source
+
+source = circ( X-floor(N/4)*dx,Y,10*dx);
+
+% generate transfer function
+
+pupil = circ(X,Y,(N/2+1)*dx);
+
+% get transfer function
+
+[PTF, ATF] = getTransferFunctions(source, pupil);
+
+figure(2), clf
+subplot(1,2,1)
+hsvplot( (Y>0).*PTF + (Y<0).*ATF)
+
+subplot(1,2,2)
+imagesc(source)
+
+
+%% simulate fully coherent point source a la FPM forward model
+% s = sind(30); % 0.5
+% s = 0.5; % 0.5
+% s = 0.4;
+% s = 0;
+s = 0.51;
+illu = exp(1j * 2*pi/wavelength * (s*X)  );
+% object_imaged = abs(ifft2c(fft2c( object .* illu ) .* pupil)).^2;
+k = 0; % mirror padding
+object_imaged = abs(ifft2c(fft2c( mirror_pad(object .* illu, k) ) .* fft2c(mirror_pad(ifft2c( pupil ), k ) )) ).^2;
+
+figure(3)
+% imagesc((object_imaged), [0.5 1.5])
+imagesc(sqrt(object_imaged), [0 0.4])
+axis image
+colormap gray
+xticks('')
+yticks('')
+zoom(1.8)
+
+%%
+function r = crossGrating(object,X,Y,xs,ys,w,p,type)
+switch type
+    case 'phase'
+        support1 = rect( (X+xs) / (3*w) ) .* rect( (Y+ys) / w );
+        support2 = rect( (X+xs) / (3*w) ) .* rect( (Y+0.25*ys) / w );
+        r = support1 .* exp(1j*(cos(2*pi*X/p))) + ...
+            support2 .* exp(1j*(cos(2*pi*Y/p))) + ...
+            (1-support1-support2) .* object;
+        % r = support1 .* exp(1j*2*pi*X/p) + ...
+        %     support2 .* exp(1j*2*pi*Y/p) + ...
+        %     (1-support1-support2).*object;
+    case 'amplitude'
+        support1 = rect( (X+xs) / (3*w) ) .* rect( (Y+ys) / w );
+        support2 = rect( (X+xs) / (3*w) ) .* rect( (Y+0.25*ys) / w );
+        r = support1 .* ((cos(2*pi*X/p)+1)/2) + ...
+            support2 .* ((cos(2*pi*Y/p)+1)/2) + ...
+            (1 - support1 - support2).*object;
+end
+end
+
+function r = starPattern(X,Y,afreq)
+
+[theta, rho] = cart2pol(X,Y);
+
+r = (1+cos(afreq*theta))/2;
+
+end
+
+
+
+
