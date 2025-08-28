@@ -28,9 +28,9 @@ x = (-N/2:(N/2-1))*dx;
 afreq = 50; 
 object = starPattern(X, Y, afreq) .* ...
     (1-circ(X,Y,100*dx)) .* circ(X,Y,0.5*L);
-object = (object > 0.5) .* rect((X-L/4)/(L/2));
-object = (2 - object)/2 .* (1 - rect((X+L/4)/(L/2))) + ...
-        exp(j*0.5*fliplr(object)) .* rect((X+L/4)/(L/2));
+object = (object > 0.5) .* rect((Y-L/4)/(L/2));
+object = (2 - object)/2 .* (1 - rect((Y+L/4)/(L/2))) + ...
+        exp(j*0.5*flipud(object)) .* rect((Y+L/4)/(L/2));
 
 figure(1)
 hsvxplot(object,'colorbar','test')
@@ -45,12 +45,12 @@ zoom(1.8)
 % source = circ( X-(floor(N/4)-1)*dx,Y,1*dx);
 % Y
 % source = circ( X,Y,100*dx);
+% source = circ( X,Y,1*dx);
 % source = circ( X,Y+(floor(N/4)-150)*dx,100*dx);
-source = circ( X,Y+1.2*(floor(N/4))*dx,100*dx);
-% source = circ( X,Y-(floor(N/4)-1)*dx,1*dx);
+% source = circ( X,Y+1.2*(floor(N/4))*dx,100*dx);
+source = circ( X,Y-(floor(N/4)-1)*dx,1*dx);
 
 % generate transfer function
-
 pupil = circ(X,Y,(N/2+1)*dx);
 pupil_grad = circ(X,Y,(N/2+10)*dx) - circ(X,Y,(N/2-10)*dx);
 
@@ -66,15 +66,15 @@ axis image off
 subplot(1,2,2)
 % imagesc( gray2rgb(source, [1 1 1]) + gray2rgb(pupil_grad, [1 1 1]))
 imagesc(source + pupil_grad, [0 1])
-colormap gray
+% colormap gray
 % h = gca;
 % gca.Colormap = gray;
 axis image off
 
 %% simulate fully coherent point source a la FPM forward model
-% s = sind(30); % 0.5
+s = -sind(30); % 0.5
 % s = 0.5; % 0.5
-s = 0.45;
+% s = 0.45;
 % s = 0;
 % s = 0.51;
 illu = exp(1j * 2*pi/wavelength * (s*X)  );
@@ -90,6 +90,17 @@ colormap gray
 xticks('')
 yticks('')
 zoom(1.8)
+
+%%
+
+% figure(3)
+% imagesc((object_imaged1 - object_imaged2)/2, [-1.5 1.5])
+% % imagesc(sqrt(object_imaged), [0 0.4])
+% axis image
+% colormap gray
+% xticks('')
+% yticks('')
+% zoom(1.8)
 
 %%
 function r = crossGrating(object,X,Y,xs,ys,w,p,type)

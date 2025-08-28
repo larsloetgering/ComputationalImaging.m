@@ -159,7 +159,7 @@ if strcmp(p.Results.colorbar,'test')
 %     c = colorbar('Location','East');
 %     set(c,'YTick',[])
     c = colorbar('Location','East','Ticks',[0.05,0.95],'TickLabels', {'\color{white} 0', '\color{white} 2\pi'});
-    c = colorbar('Location','East','Ticks',[0.05,0.95],'TickLabels', {'\color{black} 0', '\color{black} 2\pi'});
+    % c = colorbar('Location','East','Ticks',[0.05,0.95],'TickLabels', {'\color{black} 0', '\color{black} 2\pi'});
     
     set(gca,'FontSize', 60)
 %     c.TickLabels = {'0', '2\pi'} ;

@@ -1,4 +1,4 @@
-set(0, 'DefaultAxesFontSize', 24);
+set(0, 'DefaultAxesFontSize', 48);
 set(0, 'DefaultFigureColor', 'w');
 set(0,'defaultAxesFontName', 'serif')
 set(0, 'DefaultLineLineWidth', 2);
@@ -31,48 +31,73 @@ object = starPattern(X, Y, afreq) .* ...
 object = (object > 0.5) .* rect((X-L/4)/(L/2));
 object = (2 - object)/2 .* (1 - rect((X+L/4)/(L/2))) + ...
         exp(j*0.5*fliplr(object)) .* rect((X+L/4)/(L/2));
+object = rot90(object,-1);
 
 figure(1)
-hsvplot(object)
+hsvxplot(object,'colorbar','test')
 % imagesc(real(object), [0 1])
 axis image off
-colormap gray
+% colormap gray
 zoom(1.8)
 
 %% generate source
-
-source = circ( X-floor(N/4)*dx,Y,10*dx);
+% X
+% source = circ( X-(floor(N/4)-50)*dx,Y,100*dx);
+% source = circ( X-(floor(N/4)-1)*dx,Y,1*dx);
+% Y
+% source = circ( X,Y,100*dx);
+% source = circ( X,Y+(floor(N/4)-150)*dx,100*dx);
+% source = circ( X,Y-(floor(N/4)-50)*dx,100*dx) + ...
+%          circ( X,Y+(floor(N/4)-50)*dx,100*dx);
+source = circ( X,Y-(floor(N/4)-1)*dx,1*dx);
 
 % generate transfer function
-
 pupil = circ(X,Y,(N/2+1)*dx);
+pupil_grad = circ(X,Y,(N/2+10)*dx) - circ(X,Y,(N/2-10)*dx);
 
 % get transfer function
-
 [PTF, ATF] = getTransferFunctions(source, pupil);
 
 figure(2), clf
 subplot(1,2,1)
-hsvplot( (Y>0).*PTF + (Y<0).*ATF)
+% hsvxplot( (X>0).*PTF + (X<0).*ATF, 'intensityScale', [0 1/2],'colorbar','test')
+hsvxplot( (X>0).*(-PTF+PTF1) + (X<0).*(-ATF+ATF1), 'intensityScale', [0 1],'colorbar','test')
+axis image off
+% h = gca;
 
 subplot(1,2,2)
-imagesc(source)
-
+% imagesc( gray2rgb(source, [1 1 1]) + gray2rgb(pupil_grad, [1 1 1]))
+imagesc(source + pupil_grad, [0 1])
+colormap gray
+% h = gca;
+% gca.Colormap = gray;
+axis image off
 
 %% simulate fully coherent point source a la FPM forward model
-% s = sind(30); % 0.5
+s = sind(30); % 0.5
 % s = 0.5; % 0.5
-% s = 0.4;
+% s = 0.45;
 % s = 0;
-s = 0.51;
-illu = exp(1j * 2*pi/wavelength * (s*X)  );
+% s = 0.51;
+illu = exp(1j * 2*pi/wavelength * (s*Y)  );
 % object_imaged = abs(ifft2c(fft2c( object .* illu ) .* pupil)).^2;
 k = 0; % mirror padding
 object_imaged = abs(ifft2c(fft2c( mirror_pad(object .* illu, k) ) .* fft2c(mirror_pad(ifft2c( pupil ), k ) )) ).^2;
 
 figure(3)
-% imagesc((object_imaged), [0.5 1.5])
-imagesc(sqrt(object_imaged), [0 0.4])
+imagesc((object_imaged), [0.5 1.5])
+% imagesc(sqrt(object_imaged), [0 0.4])
+axis image
+colormap gray
+xticks('')
+yticks('')
+zoom(1.8)
+
+%%
+
+figure(3)
+imagesc((object_imaged1 - object_imaged2)/2, 0.4*[-1.5 1.5])
+% imagesc(sqrt(object_imaged), [0 0.4])
 axis image
 colormap gray
 xticks('')
