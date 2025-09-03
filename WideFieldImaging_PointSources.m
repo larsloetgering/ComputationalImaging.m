@@ -12,6 +12,7 @@ dx = wavelength / 2;
 L = N*dx;
 x = (-N/2:(N/2-1))*dx;
 [X,Y] = meshgrid(x);
+[Theta,R] = cart2pol(Y,X);
 
 %% generate mixed amplitude / phase object
 % object = ones(N,N);
@@ -48,7 +49,14 @@ zoom(1.8)
 % source = circ( X,Y,1*dx);
 % source = circ( X,Y+(floor(N/4)-150)*dx,100*dx);
 % source = circ( X,Y+1.2*(floor(N/4))*dx,100*dx);
-source = circ( X,Y-(floor(N/4)-1)*dx,1*dx);
+source = circ( X,Y-0.9*(floor(N/4)-1)*dx,1*dx); % used in Figure
+% source = circ( X,Y-0.9*(floor(N/4)-1)*dx,1*dx) + ...
+%          exp(1j)*circ( X,Y-1*(floor(N/4)-1)*dx,1*dx);
+% source = rect(X/(2*dx)) .*(Y > 0) .* ...
+%          circ( X,Y,(N/2+1)*dx);
+% source = rect(X/(2*dx)) .*(Y > 0) .* ...
+%          circ( X,Y,(N/2+1)*dx);
+source = (1+cos(Theta))/2;
 
 % generate transfer function
 pupil = circ(X,Y,(N/2+1)*dx);
@@ -59,22 +67,23 @@ pupil_grad = circ(X,Y,(N/2+10)*dx) - circ(X,Y,(N/2-10)*dx);
 
 figure(2), clf
 subplot(1,2,1)
-hsvxplot( (X>0).*PTF + (X<0).*ATF, 'intensityScale', [0 1/2],'colorbar','test')
+hsvxplot( (X>0).*PTF/max(abs(PTF(:))) + (X<0).*ATF/max(abs(ATF(:))),...
+    'intensityScale', [0 1],'colorbar','test')
 axis image off
 % h = gca;
 
 subplot(1,2,2)
 % imagesc( gray2rgb(source, [1 1 1]) + gray2rgb(pupil_grad, [1 1 1]))
-imagesc(source + pupil_grad, [0 1])
+imagesc(source, [0 1])
 % colormap gray
-% h = gca;
-% gca.Colormap = gray;
+h = gca;
+h.Colormap = gray;
 axis image off
 
 %% simulate fully coherent point source a la FPM forward model
-s = -sind(30); % 0.5
+% s = -sind(30); % 0.5
 % s = 0.5; % 0.5
-% s = 0.45;
+s = 0.45;
 % s = 0;
 % s = 0.51;
 illu = exp(1j * 2*pi/wavelength * (s*X)  );
