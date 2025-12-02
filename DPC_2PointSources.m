@@ -60,8 +60,8 @@ pupil_grad = circ(X,Y,(N/2+10)*dx) - circ(X,Y,(N/2-10)*dx);
 
 figure(2), clf
 subplot(1,2,1)
-% hsvxplot( (X>0).*PTF + (X<0).*ATF, 'intensityScale', [0 1/2],'colorbar','test')
-hsvxplot( (X>0).*(-PTF+PTF1) + (X<0).*(-ATF+ATF1), 'intensityScale', [0 1],'colorbar','test')
+hsvxplot( (X>0).*PTF + (X<0).*ATF, 'intensityScale', [0 1/2],'colorbar','test')
+% hsvxplot( (X>0).*(-PTF+PTF1) + (X<0).*(-ATF+ATF1), 'intensityScale', [0 1],'colorbar','test')
 axis image off
 % h = gca;
 

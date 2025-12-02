@@ -1,6 +1,14 @@
-set(0, 'DefaultAxesFontSize', 18);
-set(0, 'DefaultFigureColor', 'w');
+%% configuration
 clear
+
+fsize = 32;
+set(0, 'DefaultAxesFontSize', fsize);
+set(0, 'DefaultFigureColor', 'w');
+set(0,'defaultAxesFontName', 'serif')
+set(groot, 'DefaultTextInterpreter', 'latex');
+set(groot, 'DefaultAxesTickLabelInterpreter', 'latex');
+set(groot, 'DefaultLegendInterpreter', 'latex');
+
 addpath(genpath('utils'))
 
 charge = 1;
@@ -33,16 +41,16 @@ exp_iPhi = phaseSynchronization(beam1, beam2);
 figure(1)
 subplot(1,3,1)
 hsvplot(beam1)
-title('a')
+title('$\bf{a}$')
 axis off
  
 % figure(2)
 subplot(1,3,2)
 hsvplot(exp_iPhi*beam1)
-title('a{\cdot}exp(i\phi)')
+title('$ \bf{a}{\cdot}exp(i\phi)$')
 axis off
 
 subplot(1,3,3)
 hsvcolorbarplot(beam2, 'colorbar', 'test')
-title('b')
+title('$\bf{b}$')
 axis off
