@@ -42,6 +42,10 @@ if crop_cols
     PTF = PTF(:,1:end-1);
 end
 
+% normalize
+ATF = ATF / max(ATF(:));
+PTF = PTF / max(abs(PTF(:)));
+
 end
 
 % helper functions 
