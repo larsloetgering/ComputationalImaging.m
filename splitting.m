@@ -13,7 +13,6 @@ xx = linspace(0,2,100);
 f1 = xx;
 f2 = 0.5*xx+0.5;
 
-
 figure(1), clf
 plot(xx,f1,'b-','lineWidth',2)
 hold on
