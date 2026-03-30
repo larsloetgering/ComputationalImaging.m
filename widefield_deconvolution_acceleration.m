@@ -97,7 +97,7 @@ colormap gray
 title('Wiener')
 
 
-%% Richardsen Lucy DCV
+%% Richardson-Lucy DCV with Anderson Acceleration
 
 % initialization
 rl_dcv = stack;
@@ -108,6 +108,17 @@ denominator = iFT3(FT3(ones(size(stack))) .* conj(OTF));
 residual = [];
 figureUpdate = 25;
 
+% Anderson Acceleration parameters
+aa_depth = 5;              % number of previous iterates to store (m)
+aa_start = 1;              % iteration to start AA
+aa_beta = 1e-8;            % regularization for least squares
+use_AA = true;             % enable/disable AA
+
+% AA storage
+aa_F = [];                 % residual history: F_k = g(x_k) - x_k
+aa_X = [];                 % iterate history
+aa_iter = 0;
+
 % switches
 useGPU = true;
 
@@ -115,46 +126,104 @@ if useGPU
     denominator = gpuArray(single(denominator));
     OTF = gpuArray(single(OTF));
     stack = gpuArray(single(stack));
-    rl_dcv= gpuArray(single(rl_dcv));
+    rl_dcv = gpuArray(single(rl_dcv));
 end
 
 tic
 for loop = 1:num_iter
     
-    % RL DCV
+    % Standard RL update (fixed-point map g(x))
     y = iFT3(FT3(rl_dcv) .* OTF);
-    numerator = real( iFT3(FT3((stack + regularization)./(y + regularization)) .* conj(OTF)) );
-    rl_dcv = (numerator./denominator) .* rl_dcv;
-
-    % compute residual
-    residual = [residual, real(gather(-sum( stack(:).*log(y(:)) - y(:) )))];
-
-    if mod(loop,figureUpdate)==0
+    numerator = real(iFT3(FT3((stack + regularization)./(y + regularization)) .* conj(OTF)));
+    rl_dcv_new = (numerator./denominator) .* rl_dcv;
+    
+    % Anderson Acceleration
+    if use_AA && loop >= aa_start
+        % Compute residual: F_k = g(x_k) - x_k
+        F_k = rl_dcv_new(:) - rl_dcv(:);
+        
+        % Store current iterate and residual
+        if aa_iter == 0
+            aa_F = F_k;
+            aa_X = rl_dcv(:);
+        else
+            aa_F = [aa_F, F_k];
+            aa_X = [aa_X, rl_dcv(:)];
+        end
+        
+        % Limit depth
+        m_k = min(aa_iter, aa_depth);
+        if size(aa_F, 2) > aa_depth
+            aa_F = aa_F(:, end-aa_depth+1:end);
+            aa_X = aa_X(:, end-aa_depth+1:end);
+        end
+        
+        % Compute differences
+        if m_k > 0
+            dF = diff(aa_F, 1, 2);  % F_{k} - F_{k-1}, ..., F_{k} - F_{k-m_k}
+            
+            % Solve least squares: min ||dF * gamma - F_k||^2 + beta*||gamma||^2
+            % Using normal equations with Tikhonov regularization
+            M = dF' * dF + aa_beta * eye(m_k);
+            rhs = dF' * F_k;
+            gamma = M \ rhs;
+            
+            % Compute accelerated iterate
+            dX = diff(aa_X, 1, 2);
+            x_aa = rl_dcv_new(:) - dF * gamma + dX * gamma;
+            
+            % Reshape and apply non-negativity constraint
+            rl_dcv = reshape(x_aa, size(rl_dcv));
+            rl_dcv = max(rl_dcv, 0);  % ensure non-negativity
+        else
+            rl_dcv = rl_dcv_new;
+        end
+        
+        aa_iter = aa_iter + 1;
+    else
+        rl_dcv = rl_dcv_new;
+    end
+    
+    % Compute residual (Poisson log-likelihood)
+    y = iFT3(FT3(rl_dcv) .* OTF);  % recompute with updated rl_dcv
+    residual = [residual, real(gather(-sum(stack(:).*log(y(:)+eps) - y(:))))];
+    
+    % Visualization
+    if mod(loop, figureUpdate) == 0
         
         figure(5)
         subplot(1,2,1)
         imagesc(gather(stack(:,:,plane))', [0 0.75*max(stack(:,:,plane),[],[1,2])])
         axis image off
         colormap gray
-        title('wide field')
-
+        title('Wide Field')
+        
         subplot(1,2,2)
         imagesc(gather(rl_dcv(:,:,plane))', [0 0.3*max(rl_dcv(:,:,plane),[],[1,2])])
         axis image off
         colormap gray
-        title(['RL iterations: ', num2str(loop)])
-
+        if use_AA
+            title(['RL+AA (m=', num2str(aa_depth), '), iter: ', num2str(loop)])
+        else
+            title(['RL iterations: ', num2str(loop)])
+        end
+        
         if loop >= 1
             figure(6)
-            loglog(1:loop,residual(1:loop)/residual(1),'-ok','linewidth',2,'MarkerFaceColor','k')
-            xlabel('iteration'), ylabel('residual')
+            loglog(1:loop, residual(1:loop)/residual(1), '-ok', 'linewidth', 2, 'MarkerFaceColor', 'k')
+            xlabel('Iteration'), ylabel('Normalized Residual')
             axis square
             grid on
+            if use_AA
+                title(['Convergence (AA depth m=', num2str(aa_depth), ')'])
+            end
         end
         drawnow
     end
 end
 toc
+
+fprintf('Final residual reduction: %.2e\n', residual(end)/residual(1));
 
 %% crop reconstructed data
 
