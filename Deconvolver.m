@@ -1,0 +1,301 @@
+classdef Deconvolver < handle
+    % DECONVOLVER Flexible deconvolution with automatic differentiation
+    %
+    % Supports:
+    %   Regularizers: Tikhonov, Good's roughness, TV Hessian Schattennnorm
+    %   Data terms: L2, L1, Poisson negative log-likelihood
+    %
+    % Example:
+    %   psf = fspecial('gaussian', [15 15], 2);
+    %   deconv = Deconvolver(psf, 'Regularizer', 'tv', ...
+    %                        'DataTerm', 'l2', 'Lambda', 0.01);
+    %   restored = deconv.deconvolve(blurred, 'Iterations', 100);
+
+    properties
+        PSF                % Point Spread Function
+        Regularizer        % Regularization type
+        DataTerm           % Data fidelity term
+        Lambda             % Regularization strength
+        H_fft              % FFT of PSF
+        ImageSize          % Size of image to deconvolve
+        NDim               % Dimensionality (2 or 3)
+    end
+
+    methods
+        function obj = Deconvolver(psf, varargin)
+            % Constructor
+
+            p = inputParser;
+            addRequired(p, 'psf');
+            addParameter(p, 'Regularizer', 'tikhonov', ...
+                @(x) ismember(x, {'tikhonov', 'tv', 'goods', 'hessian'}));
+            addParameter(p, 'DataTerm', 'l2', ...
+                @(x) ismember(x, {'l2', 'l1', 'poisson'}));
+            addParameter(p, 'Lambda', 0.01, @(x) x > 0);
+            parse(p, psf, varargin{:});
+
+            obj.PSF = psf;
+            obj.Regularizer = p.Results.Regularizer;
+            obj.DataTerm = p.Results.DataTerm;
+            obj.Lambda = p.Results.Lambda;
+            obj.NDim = ndims(psf);
+
+            obj.H_fft = [];
+        end
+
+        function restored = deconvolve(obj, blurred, varargin)
+            % Perform deconvolution using automatic differentiation
+
+            p = inputParser;
+            addRequired(p, 'blurred');
+            addParameter(p, 'Iterations', 100, @(x) x > 0);
+            addParameter(p, 'LearningRate', 0.01, @(x) x > 0);
+            addParameter(p, 'Tolerance', 1e-16, @(x) x > 0);
+            addParameter(p, 'Verbose', true, @islogical);
+            addParameter(p, 'InitialGuess', []);
+            parse(p, blurred, varargin{:});
+
+            obj.ImageSize = size(blurred);
+
+            % Precompute PSF FFT
+            psf_padded = obj.padPSF(obj.PSF, obj.ImageSize);
+            obj.H_fft = fftn(ifftshift(psf_padded));
+
+            % Initialize estimate - keep as regular array
+            if isempty(p.Results.InitialGuess)
+                x = single(blurred);
+            else
+                x = single(p.Results.InitialGuess);
+            end
+
+            % Convert blurred to single for consistency
+            blurred = single(blurred);
+
+            % ADAM optimizer parameters
+            beta1 = 0.9;
+            beta2 = 0.999;
+            epsilon = 1e-8;
+            m = zeros(size(x), 'like', x);
+            v = zeros(size(x), 'like', x);
+
+            lr = p.Results.LearningRate;
+            prevLoss = inf;
+
+            % Optimization loop
+            for iter = 1:p.Results.Iterations
+                % Convert to dlarray for gradient computation
+                x_dl = dlarray(x);
+
+                % Compute loss and gradients
+                [loss, grad] = dlfeval(@obj.computeLossAndGradients, x_dl, blurred);
+
+                % Extract gradient values
+                grad = extractdata(grad);
+                lossVal = extractdata(loss);
+
+                % ADAM update
+                m = beta1 * m + (1 - beta1) * grad;
+                v = beta2 * v + (1 - beta2) * grad.^2;
+
+                m_hat = m / (1 - beta1^iter);
+                v_hat = v / (1 - beta2^iter);
+
+                x = x - lr * m_hat ./ (sqrt(v_hat) + epsilon);
+
+                % Enforce non-negativity
+                x = max(x, eps);
+
+                % Check convergence
+                if abs(prevLoss - lossVal) < p.Results.Tolerance
+                    if p.Results.Verbose
+                        fprintf('Converged at iteration %d\n', iter);
+                    end
+                    break;
+                end
+                prevLoss = lossVal;
+
+                % Display progress
+                if p.Results.Verbose && mod(iter, 10) == 0
+                    fprintf('Iter %d/%d, Loss: %.6f\n', ...
+                        iter, p.Results.Iterations, lossVal);
+                end
+            end
+
+            restored = x;
+        end
+
+        function [loss, grad] = computeLossAndGradients(obj, x, blurred)
+            % Compute total loss and gradients
+            % x is dlarray, blurred is regular array
+
+            % Data fidelity term
+            Hx = obj.convolve(x);
+            dataLoss = obj.computeDataTerm(Hx, blurred);
+
+            % Regularization term
+            regLoss = obj.computeRegularization(x);
+
+            % Total loss
+            loss = dataLoss + obj.Lambda * regLoss;
+
+            % Compute gradient
+            grad = dlgradient(loss, x);
+        end
+
+        function x_convolved = convolve(obj, x)
+            % Perform convolution in Fourier domain
+            X_fft= fft(fft(x,[],2),[],1);
+            x_convolved = real( ifft(ifft(obj.H_fft .* X_fft,[],2),[],1) );
+        end
+
+        %% Data Terms
+
+        function loss = computeDataTerm(obj, Hx, b)
+            % Compute data fidelity term
+            switch obj.DataTerm
+                case 'l2'
+                    loss = obj.dataL2(Hx, b);
+                case 'l1'
+                    loss = obj.dataL1(Hx, b);
+                case 'poisson'
+                    loss = obj.dataPoisson(Hx, b);
+            end
+        end
+
+        function loss = dataL2(~, Hx, b)
+            % L2 norm: $$||Hx - b||_2^2$$
+            loss = mean(abs(Hx - b).^2, 'all');
+        end
+
+        function loss = dataL1(~, Hx, b)
+            % % L1 norm: $$||Hx - b||_1$$
+            aleph = 1e2;
+            loss = mean( sqrt(abs(Hx - b).^2 + aleph), 'all');
+        end
+
+        function loss = dataPoisson(~, Hx, b)
+            % Poisson negative log-likelihood: $$\sum(Hx - b \log(Hx))$$
+            epsilon = 1e-10;
+            Hx_safe = max(Hx, epsilon);
+            loss = sum(Hx_safe - b .* log(Hx_safe), 'all') / numel(b);
+        end
+
+        %% Regularizers
+
+        function loss = computeRegularization(obj, x)
+            % Compute regularization term
+            switch obj.Regularizer
+                case 'tikhonov'
+                    loss = obj.regTikhonov(x);
+                case 'tv'
+                    loss = obj.regTotalVariation(x);
+                case 'goods'
+                    loss = obj.regGoods(x);
+                case 'hessian'
+                    loss = obj.regHessian(x);
+            end
+        end
+
+        function loss = regTikhonov(~, x)
+            % Tikhonov (L2): $$||x||_2^2$$
+            loss = mean(abs(x).^2, 'all');
+        end
+
+        function loss = regTotalVariation(obj, x)
+            % Total Variation: $$\sum |\nabla x|$$
+            epsilon = 1e-8;
+
+            if obj.NDim == 2
+                % Get size
+                sz = size(x);
+
+                % Compute differences
+                dx = x(:, 2:end) - x(:, 1:end-1);
+                dy = x(2:end, :) - x(1:end-1, :);
+
+                % Crop to matching size
+                dx_crop = dx(1:end-1, :);
+                dy_crop = dy(:, 1:end-1);
+
+                gradMag = sqrt(abs(dx_crop).^2 + abs(dy_crop).^2 + epsilon);
+            else  % 3D
+                dx = x(:, :, 2:end) - x(:, :, 1:end-1);
+                dy = x(:, 2:end, :) - x(:, 1:end-1, :);
+                dz = x(2:end, :, :) - x(1:end-1, :, :);
+
+                % Crop to matching size
+                dx_crop = dx(1:end-1, 1:end-1, :);
+                dy_crop = dy(1:end-1, :, 1:end-1);
+                dz_crop = dz(:, 1:end-1, 1:end-1);
+
+                gradMag = sqrt(abs(dx_crop).^2 + abs(dy_crop).^2 + abs(dz_crop).^2 + epsilon);
+            end
+
+            loss = mean(gradMag, 'all');
+        end
+
+        function loss = regGoods(~, x)
+            epsilon = 1e-8;
+            % Compute differences
+            dx = x(:, 2:end) - x(:, 1:end-1);
+            dy = x(2:end, :) - x(1:end-1, :);
+
+            % Crop to matching size
+            dx_crop = dx(1:end-1, :);
+            dy_crop = dy(:, 1:end-1);
+
+            % denominator = abs(x(1:end-1,1:end-1)).^2 + 1e-2;
+            denominator=1;
+            gradMag = (abs(dx_crop).^2 + abs(dy_crop).^2 + epsilon)./denominator;
+            loss = mean(gradMag, 'all');
+        end
+
+        function loss = regHessian(obj, x)
+            % Hessian Schatten norm
+            epsilon = 1e-16;
+
+            if obj.NDim == 2
+                % Second derivatives
+                dxx = x(:, 3:end) - 2*x(:, 2:end-1) + x(:, 1:end-2);
+                dyy = x(3:end, :) - 2*x(2:end-1, :) + x(1:end-2, :);
+                dxy = (x(2:end, 2:end) - x(2:end, 1:end-1) - ...
+                    x(1:end-1, 2:end) + x(1:end-1, 1:end-1));
+
+                % Crop to matching dimensions
+                dxx_crop = dxx(1:end-2, :);
+                dyy_crop = dyy(:, 1:end-2);
+                dxy_crop = dxy(1:end-1, 1:end-1);
+
+                H_norm = sqrt(abs(dxx_crop).^2 + abs(dyy_crop).^2 + 2*abs(dxy_crop).^2 + epsilon);
+            else  % 3D
+                dxx = x(:, :, 3:end) - 2*x(:, :, 2:end-1) + x(:, :, 1:end-2);
+                dyy = x(:, 3:end, :) - 2*x(:, 2:end-1, :) + x(:, 1:end-2, :);
+                dzz = x(3:end, :, :) - 2*x(2:end-1, :, :) + x(1:end-2, :, :);
+
+                % Crop to matching dimensions
+                dxx_crop = dxx(1:end-2, 1:end-2, :);
+                dyy_crop = dyy(1:end-2, :, 1:end-2);
+                dzz_crop = dzz(:, 1:end-2, 1:end-2);
+
+                H_norm = sqrt(abs(dxx_crop).^2 + abs(dyy_crop).^2 + abs(dzz_crop).^2 + epsilon);
+            end
+
+            loss = mean(H_norm, 'all');
+        end
+
+    end
+
+    methods (Static)
+        function psf_padded = padPSF(psf, imageSize)
+            % Pad PSF to image size
+            psfSize = size(psf);
+            psf_padded = zeros(imageSize, 'like', psf);
+
+            if length(imageSize) == 2
+                psf_padded(1:psfSize(1), 1:psfSize(2)) = psf;
+            else
+                psf_padded(1:psfSize(1), 1:psfSize(2), 1:psfSize(3)) = psf;
+            end
+        end
+    end
+end
