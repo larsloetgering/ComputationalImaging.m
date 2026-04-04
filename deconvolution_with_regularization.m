@@ -89,7 +89,7 @@ title('Wiener')
 
 lr = 1e2;
 % Goods filter
-deconv = Deconvolver(psf, 'Regularizer', 'goods', ...
+deconv = Deconvolver(psf, 'Regularizer', 'gradient', ...
     'DataTerm', 'l2', 'Lambda', 2.2e0);
 
 % Perform deconvolution
@@ -100,7 +100,7 @@ figure(2)
 subplot(2,3,4)
 imagesc(real(restored))
 axis image off
-title('Good`s')
+title('gradient')
 
 %% tv
 
