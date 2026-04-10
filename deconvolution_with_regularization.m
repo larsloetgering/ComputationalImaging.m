@@ -68,22 +68,27 @@ deconv = Deconvolver(psf, 'Regularizer', 'tikhonov', ...
 restored = deconv.deconvolve(blurred, 'Iterations', maxIter, ...
     'LearningRate', lr, 'Verbose', true);
 
+zoom_fac = 1.5;
+
 figure(2), clf
 subplot(2,3,1)
 imagesc(img)
 axis image off
 title('ground truth')
 colormap gray
+zoom(zoom_fac)
 
 subplot(2,3,2)
 imagesc(blurred)
 axis image off
 title('raw data')
+zoom(zoom_fac)
 
 subplot(2,3,3)
 imagesc(real(restored))
 axis image off
 title('Wiener')
+zoom(zoom_fac)
 
 %% Good's roughness
 
@@ -101,6 +106,7 @@ subplot(2,3,4)
 imagesc(real(restored))
 axis image off
 title('gradient')
+zoom(zoom_fac)
 
 %% tv
 
@@ -117,12 +123,13 @@ subplot(2,3,5)
 imagesc(max(real(restored),0))
 axis image off
 title('TV')
+zoom(zoom_fac)
 
 %% Hessian
 
 lr = 1e2;
 deconv = Deconvolver(psf, 'Regularizer', 'hessian', ...
-    'DataTerm', 'l2', 'Lambda', 1e-1);
+    'DataTerm', 'l2', 'Lambda', 1e-2);
 
 % Perform deconvolution
 restored = deconv.deconvolve(blurred, 'Iterations', maxIter, ...
@@ -133,3 +140,4 @@ subplot(2,3,6)
 imagesc(max(real(restored),0))
 axis image off
 title('Hessian')
+zoom(zoom_fac)

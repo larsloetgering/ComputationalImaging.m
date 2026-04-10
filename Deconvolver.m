@@ -129,8 +129,8 @@ classdef Deconvolver < handle
             % x is dlarray, blurred is regular array
 
             % Data fidelity term
-            Hx = obj.convolve(x);
-            dataLoss = obj.computeDataTerm(Hx, blurred);
+            H_times_x = obj.convolve(x);
+            dataLoss = obj.computeDataTerm(H_times_x, blurred);
 
             % Regularization term
             regLoss = obj.computeRegularization(x);
