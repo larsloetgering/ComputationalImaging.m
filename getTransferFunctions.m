@@ -3,18 +3,20 @@ function [PTF, ATF] = getTransferFunctions(source, pupil)
 % PTF: phase transfer function
 % assumes weak object approximation
 % exp(mu-j*phi) ~ 1 + mu - j*phi
-
-% padding if needed
 if mod( size(source,1), 2) == 0
-    crop_rows = true;
+    crop_rows = true; % pad if needed
     source = [source; zeros(1,size(source,2))];
     pupil = [pupil; zeros(1,size(pupil,2))];
+else
+    crop_rows = false; % pad if needed
 end
 
 if mod( size(source,2), 2) == 0
-    crop_cols = true;
+    crop_cols = true; % pad if needed
     source = [source, zeros(size(source,1),1)];
     pupil = [pupil, zeros(size(pupil,1),1)];
+else
+    crop_cols = false; % pad if needed
 end
 
 % compute term1 and term2 which are later(*) added 
@@ -28,7 +30,7 @@ term2 = centered_ifft2( ...
     conj( centered_fft2( pupil ) ) );
 
 % (*)compute ATF and PTF
-ATF = (term1 + term2);
+ATF = term1 + term2;
 PTF = 1j*(term1 - term2);
 
 % crop if needed
@@ -45,7 +47,6 @@ end
 % normalize
 ATF = ATF / max(ATF(:));
 PTF = PTF / max(abs(PTF(:)));
-
 end
 
 % helper functions 
