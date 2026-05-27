@@ -27,11 +27,11 @@ numSources = length(NAi);
 source = zeros(N,N,numSources);
 for sourceLoop = 1:numSources
     % half pupil illumination
-    % source(:,:,sourceLoop) = (circ(Fx,Fy,2*NAi(sourceLoop)/wavelength)).* (Fx>0);  % oblique illumination
+    source(:,:,sourceLoop) = (circ(Fx,Fy,2*NAi(sourceLoop)/wavelength)).* (Fx>0);  % oblique illumination
     % azimuthal ring
-    source(:,:,sourceLoop) = (1+cos(atan2(Fy,Fx)))/2 .* ...
-                    (circ(Fx,Fy,2*NAi(sourceLoop)/wavelength) - ...
-                             circ(Fx,Fy,4/5*2*NAi(sourceLoop)/wavelength));
+    % source(:,:,sourceLoop) = (1+cos(atan2(Fy,Fx)))/2 .* ...
+    %                 (circ(Fx,Fy,2*NAi(sourceLoop)/wavelength) - ...
+    %                          circ(Fx,Fy,4/5*2*NAi(sourceLoop)/wavelength));
     
 end
 pupil = circ(Fx,Fy,2*NAi(end)/wavelength);
